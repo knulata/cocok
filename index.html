@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cocok 💜 Cari yang Beneran Cocok</title>
+<meta name="description" content="Quiz 3 menit. Temukan pola cintamu dan siapa yang benar-benar cocok untukmu. 50,000+ orang sudah coba!">
+<meta property="og:title" content="Cocok 💜 Cari yang Beneran Cocok">
+<meta property="og:description" content="Quiz 3 menit. Temukan pola cintamu dan siapa yang benar-benar cocok untukmu.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cocok.app">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: { 400: '#c084fc', 500: '#a855f7', 600: '#9333ea', 700: '#7e22ce', 800: '#6b21a8', 900: '#581c87' },
+        pink: { 400: '#f472b6', 500: '#ec4899' }
+      }
+    }
+  }
+}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+body { font-family: 'Inter', sans-serif; }
+.fade-in { animation: fadeIn 0.5s ease-out; }
+.slide-up { animation: slideUp 0.4s ease-out; }
+.slide-in-right { animation: slideInRight 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px rgba(168,85,247,0.4); } 50% { box-shadow: 0 0 40px rgba(168,85,247,0.7); } }
+.pulse-glow { animation: pulse-glow 2s infinite; }
+.blur-content { filter: blur(6px); user-select: none; pointer-events: none; }
+.progress-bar { transition: width 0.4s ease; }
+.option-btn { transition: all 0.2s ease; }
+.option-btn:hover { transform: translateY(-2px); }
+.option-btn:active { transform: scale(0.97); }
+.result-card-bg { background: linear-gradient(135deg, #1e1b4b 0%, #581c87 40%, #831843 100%); }
+.hero-gradient { background: radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.15) 0%, transparent 70%); }
+.floating { animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+</style>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+
+<!-- LANDING -->
+<section id="landing" class="min-h-screen flex flex-col items-center justify-center px-4 hero-gradient relative">
+  <div class="absolute top-4 right-4">
+    <button onclick="toggleLang()" class="text-sm bg-white/10 backdrop-blur px-3 py-1.5 rounded-full hover:bg-white/20 transition" id="langBtn">🇬🇧 EN</button>
+  </div>
+  <div class="text-center max-w-md mx-auto slide-up">
+    <div class="text-6xl mb-4 floating">💜</div>
+    <h1 class="text-4xl font-black mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent" id="heroTitle">Cari yang Beneran Cocok</h1>
+    <p class="text-gray-400 mb-8 text-lg" id="heroSub">Quiz 3 menit. Temukan pola cintamu dan siapa yang benar-benar cocok untukmu.</p>
+    <button onclick="startQuiz()" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-lg px-8 py-4 rounded-2xl pulse-glow hover:scale-105 transition-transform" id="startBtn">
+      Mulai Quiz →
+    </button>
+    <p class="text-gray-500 text-sm mt-6" id="socialProof">🔥 50,000+ orang sudah coba</p>
+  </div>
+</section>
+
+<!-- SHARED RESULT (shown when visiting via share link) -->
+<section id="sharedResult" class="hidden min-h-screen flex flex-col items-center justify-center px-4">
+  <div class="max-w-md mx-auto text-center slide-up">
+    <p class="text-gray-400 mb-4" id="sharedIntro">Temanmu mendapat hasil:</p>
+    <div class="result-card-bg rounded-3xl p-8 mb-6">
+      <div class="text-5xl mb-3" id="sharedEmoji"></div>
+      <h2 class="text-2xl font-bold mb-2" id="sharedType"></h2>
+      <p class="text-gray-300 text-sm" id="sharedDesc"></p>
+    </div>
+    <button onclick="startQuiz()" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-lg px-8 py-4 rounded-2xl pulse-glow hover:scale-105 transition-transform" id="sharedCta">
+      Coba Quiz Juga! →
+    </button>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="hidden min-h-screen flex flex-col px-4 py-8">
+  <div class="max-w-md mx-auto w-full flex-1 flex flex-col">
+    <!-- Progress -->
+    <div class="mb-6">
+      <div class="flex justify-between text-sm text-gray-400 mb-2">
+        <span id="qNum">1/10</span>
+        <span id="qPct">10%</span>
+      </div>
+      <div class="w-full bg-gray-800 rounded-full h-2">
+        <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full progress-bar" id="progressBar" style="width:10%"></div>
+      </div>
+    </div>
+    <!-- Question -->
+    <div class="flex-1 flex flex-col justify-center">
+      <h2 class="text-xl font-bold mb-6 slide-in-right" id="questionText"></h2>
+      <div class="space-y-3" id="optionsContainer"></div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULT -->
+<section id="result" class="hidden px-4 py-8">
+  <div class="max-w-md mx-auto">
+    <!-- Result Card -->
+    <div id="resultCard" class="result-card-bg rounded-3xl p-8 text-center mb-6 slide-up relative overflow-hidden">
+      <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 20% 80%, rgba(236,72,153,0.3), transparent 50%), radial-gradient(circle at 80% 20%, rgba(168,85,247,0.3), transparent 50%);"></div>
+      <div class="relative z-10">
+        <p class="text-xs text-purple-300 uppercase tracking-widest mb-2">Cocok 💜 Love Pattern</p>
+        <div class="text-6xl mb-4" id="resultEmoji"></div>
+        <h2 class="text-3xl font-black mb-3 bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent" id="resultType"></h2>
+        <p class="text-gray-300 leading-relaxed mb-6" id="resultDesc"></p>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="bg-white/10 rounded-xl p-3">
+            <p class="text-green-400 font-semibold mb-1" id="compatLabel">💚 Cocok sama</p>
+            <p class="text-white" id="compatMatch"></p>
+          </div>
+          <div class="bg-white/10 rounded-xl p-3">
+            <p class="text-red-400 font-semibold mb-1" id="cautionLabel">⚠️ Hati-hati</p>
+            <p class="text-white" id="compatCaution"></p>
+          </div>
+        </div>
+        <p class="text-[10px] text-purple-400 mt-4">cocok.app</p>
+      </div>
+    </div>
+
+    <!-- Share -->
+    <div class="bg-gray-900 rounded-2xl p-5 mb-6">
+      <h3 class="font-bold mb-3 text-center" id="shareTitle">📤 Share Hasilmu!</h3>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="shareWA()" class="bg-green-600 hover:bg-green-700 rounded-xl py-3 text-sm font-semibold transition">💬 WhatsApp</button>
+        <button onclick="shareTwitter()" class="bg-blue-500 hover:bg-blue-600 rounded-xl py-3 text-sm font-semibold transition">🐦 Twitter</button>
+        <button onclick="copyLink()" class="bg-gray-700 hover:bg-gray-600 rounded-xl py-3 text-sm font-semibold transition" id="copyBtn">🔗 Copy Link</button>
+        <button onclick="shareIG()" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 rounded-xl py-3 text-sm font-semibold transition">📸 Screenshot</button>
+      </div>
+    </div>
+
+    <!-- Referral -->
+    <div class="bg-gradient-to-r from-purple-900/50 to-pink-900/50 border border-purple-700/50 rounded-2xl p-5 mb-6 text-center">
+      <p class="font-bold mb-1" id="referralTitle">🎁 Ajak 3 teman quiz → unlock report GRATIS!</p>
+      <p class="text-gray-400 text-sm" id="referralSub">Share linkmu & kumpulkan 3 referral</p>
+      <div class="mt-3 bg-black/30 rounded-lg px-4 py-2 text-sm text-purple-300 font-mono break-all" id="referralLink"></div>
+    </div>
+
+    <!-- Premium: Full Report -->
+    <div class="bg-gray-900 rounded-2xl p-6 mb-4 relative overflow-hidden border border-purple-500/30">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="bg-purple-600 text-xs font-bold px-2 py-1 rounded-full">🔒 PREMIUM</span>
+      </div>
+      <h3 class="text-xl font-bold mb-2" id="premTitle1">Laporan Lengkap Pola Cintamu</h3>
+      <p class="text-gray-400 text-sm mb-3" id="premDesc1">Hasil quiz kamu cuma permukaannya. Laporan lengkap ini mengungkap:</p>
+      <ul class="text-sm text-gray-300 space-y-2 mb-4">
+        <li>💔 <strong>Pola Attachment</strong> — Kenapa kamu selalu tertarik tipe yang sama? Apa yang membuatmu cemas atau menghindar?</li>
+        <li>🗣️ <strong>Gaya Komunikasi</strong> — Cara kamu berantem, minta maaf, dan mengekspresikan cinta</li>
+        <li>💕 <strong>Love Language Detail</strong> — Bukan cuma tipe, tapi cara spesifik kamu memberi & menerima cinta</li>
+        <li>🚩 <strong>Red & Green Flags</strong> — Apa yang harus kamu waspadai dan apa kelebihanmu dalam hubungan</li>
+        <li>💡 <strong>Tips Personal</strong> — 5 saran spesifik untuk hubunganmu berdasarkan polamu</li>
+      </ul>
+      <div class="blur-content text-sm text-gray-300 space-y-2 mb-4">
+        <p>Kamu memiliki gaya attachment yang cenderung secure dengan sedikit kecemasan. Ini berarti kamu mampu membentuk ikatan yang dalam namun kadang overthinking tentang perasaan pasangan. Pola ini biasanya terbentuk dari...</p>
+        <p>Cara kamu berkomunikasi dalam konflik cenderung menghindari dulu, baru memproses. Ini bukan kelemahan, tapi pasanganmu perlu tahu bahwa kamu butuh waktu, bukan menolak mereka...</p>
+      </div>
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-2xl font-black text-purple-400">Rp 29.000</p>
+        <p class="text-xs text-gray-500 line-through">Rp 79.000</p>
+      </div>
+      <button onclick="unlockReport('full')" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 font-bold py-3 rounded-xl hover:opacity-90 transition" id="unlockBtn1">🔓 Buka Laporan Lengkap</button>
+      <p class="text-center text-xs text-gray-500 mt-2">4,823 orang sudah unlock minggu ini</p>
+    </div>
+
+    <!-- Premium: Ideal Match -->
+    <div class="bg-gray-900 rounded-2xl p-6 mb-4 relative overflow-hidden border border-pink-500/30">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="bg-pink-600 text-xs font-bold px-2 py-1 rounded-full">🔒 PREMIUM</span>
+        <span class="bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-full">⭐ TERLARIS</span>
+      </div>
+      <h3 class="text-xl font-bold mb-2" id="premTitle2">Profil Pasangan Idealmu</h3>
+      <p class="text-gray-400 text-sm mb-3" id="premDesc2">Pernah nanya "sebenernya aku cocoknya sama tipe yang gimana?" Ini jawabannya:</p>
+      <ul class="text-sm text-gray-300 space-y-2 mb-4">
+        <li>👤 <strong>Tipe Kepribadian Ideal</strong> — Karakter spesifik yang bakal bikin kamu jatuh cinta & bertahan</li>
+        <li>⚡ <strong>Chemistry Match</strong> — Tipe mana yang bikin kamu "klik" vs yang cuma sementara</li>
+        <li>⚠️ <strong>Tipe yang Harus Dihindari</strong> — Kenapa hubungan lamamu ga works, dan pola apa yang harus dihentikan</li>
+        <li>💬 <strong>Conversation Starter</strong> — 3 pertanyaan untuk mengetahui apakah seseorang cocok untukmu</li>
+      </ul>
+      <div class="blur-content text-sm text-gray-300 space-y-2 mb-4">
+        <p>Pasangan idealmu adalah seseorang yang hangat namun independen, mampu memberikan ruang personal sambil tetap hadir secara emosional. Mereka kemungkinan besar adalah tipe yang tenang namun penuh perhatian...</p>
+      </div>
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-2xl font-black text-pink-400">Rp 49.000</p>
+        <p class="text-xs text-gray-500 line-through">Rp 129.000</p>
+      </div>
+      <button onclick="unlockReport('match')" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 font-bold py-3 rounded-xl hover:opacity-90 transition" id="unlockBtn2">🔓 Buka Profil Match Idealmu</button>
+      <p class="text-center text-xs text-gray-500 mt-2">Yang paling sering di-unlock! 🔥</p>
+    </div>
+
+    <!-- Payment Info -->
+    <div class="bg-gray-900/50 rounded-2xl p-5 mb-6 text-center text-sm text-gray-400">
+      <p class="font-semibold text-white mb-2" id="payTitle">💳 Opsi Pembayaran</p>
+      <p>GoPay: <span class="text-white font-mono">081311024455</span></p>
+      <p>BCA: <span class="text-white font-mono">3722808999</span></p>
+      <p class="mt-2 text-xs" id="payNote">Setelah transfer, klik tombol unlock untuk konfirmasi via WhatsApp</p>
+    </div>
+
+    <!-- Cocok CTA -->
+    <div class="bg-gradient-to-r from-purple-800 to-purple-900 rounded-2xl p-6 text-center mb-8">
+      <p class="text-lg font-bold mb-2" id="ctaTitle">💜 Mau ketemu match-mu?</p>
+      <p class="text-gray-300 text-sm mb-4" id="ctaSub">Cocok — Dating app yang beneran ngerti kamu</p>
+      <a href="https://t.me/cocokapp" target="_blank" class="inline-block bg-white text-purple-900 font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition" id="ctaBtn">Gabung Cocok →</a>
+    </div>
+
+    <!-- Footer -->
+    <p class="text-center text-xs text-gray-600 mb-4">© 2025 Cocok. All rights reserved.</p>
+  </div>
+</section>
+
+<script>
+// --- DATA ---
+let lang = 'id';
+let currentQ = 0;
+let answers = [];
+let resultType = null;
+let quizId = '';
+
+const types = {
+  'deep-connector':    { emoji: '💜', id: 'The Deep Connector',    en: 'The Deep Connector',    match: 'steady-anchor',      caution: 'free-spirit' },
+  'passionate-explorer': { emoji: '🔥', id: 'The Passionate Explorer', en: 'The Passionate Explorer', match: 'romantic-dreamer',   caution: 'steady-anchor' },
+  'steady-anchor':     { emoji: '🛡️', id: 'The Steady Anchor',     en: 'The Steady Anchor',     match: 'deep-connector',     caution: 'passionate-explorer' },
+  'free-spirit':       { emoji: '🌊', id: 'The Free Spirit',       en: 'The Free Spirit',       match: 'passionate-explorer', caution: 'deep-connector' },
+  'growth-partner':    { emoji: '💎', id: 'The Growth Partner',    en: 'The Growth Partner',    match: 'growth-partner',     caution: 'free-spirit' },
+  'romantic-dreamer':  { emoji: '🎭', id: 'The Romantic Dreamer',  en: 'The Romantic Dreamer',  match: 'passionate-explorer', caution: 'steady-anchor' }
+};
+
+const typeDescs = {
+  'deep-connector':     { id: 'Kamu orang yang emosional mendalam, menghargai komunikasi & kepercayaan. Kamu butuh koneksi yang otentik dan bermakna dalam hubungan.', en: 'You\'re emotionally deep, valuing communication & trust. You need authentic, meaningful connections in relationships.' },
+  'passionate-explorer':{ id: 'Kamu intens, petualang, dan driven by chemistry. Kamu hidup untuk momen-momen penuh gairah dan pengalaman baru bersama.', en: 'You\'re intense, adventurous, and chemistry-driven. You live for passionate moments and new experiences together.' },
+  'steady-anchor':      { id: 'Kamu stabil, bisa diandalkan, dan menghargai keamanan. Kamu adalah fondasi kuat yang membuat hubungan bertahan lama.', en: 'You\'re stable, reliable, and value security. You\'re the strong foundation that makes relationships last.' },
+  'free-spirit':        { id: 'Kamu mengalir dengan arus, independen, dan santai. Kamu percaya hubungan terbaik datang tanpa tekanan dan ekspektasi berlebihan.', en: 'You go with the flow, independent and chill. You believe the best relationships come without pressure or excessive expectations.' },
+  'growth-partner':     { id: 'Kamu selalu ingin berkembang dan membangun bersama. Hubungan bagimu adalah partnership untuk saling mengangkat jadi versi terbaik.', en: 'You always want to grow and build together. Relationships for you are partnerships to elevate each other to your best versions.' },
+  'romantic-dreamer':   { id: 'Kamu idealis, penuh cinta, dan suka gestur besar. Kamu percaya pada cinta sejati dan selalu memberi yang terbaik untuk pasangan.', en: 'You\'re idealistic, loving, and big on gestures. You believe in true love and always give your best for your partner.' }
+};
+
+const i18n = {
+  heroTitle:     { id: 'Cari yang Beneran Cocok', en: 'Find Your True Match' },
+  heroSub:       { id: 'Quiz 3 menit. Temukan pola cintamu dan siapa yang benar-benar cocok untukmu.', en: '3-minute quiz. Discover your love pattern and who truly fits you.' },
+  startBtn:      { id: 'Mulai Quiz →', en: 'Start Quiz →' },
+  socialProof:   { id: '🔥 50,000+ orang sudah coba', en: '🔥 50,000+ people have tried it' },
+  langBtn:       { id: '🇬🇧 EN', en: '🇮🇩 ID' },
+  shareTitle:    { id: '📤 Share Hasilmu!', en: '📤 Share Your Result!' },
+  compatLabel:   { id: '💚 Cocok sama', en: '💚 Best match' },
+  cautionLabel:  { id: '⚠️ Hati-hati', en: '⚠️ Watch out' },
+  referralTitle: { id: '🎁 Ajak 3 teman quiz → unlock report GRATIS!', en: '🎁 Invite 3 friends → unlock report FREE!' },
+  referralSub:   { id: 'Share linkmu & kumpulkan 3 referral', en: 'Share your link & collect 3 referrals' },
+  copyBtn:       { id: '🔗 Copy Link', en: '🔗 Copy Link' },
+  sharedIntro:   { id: 'Temanmu mendapat hasil:', en: 'Your friend got:' },
+  sharedCta:     { id: 'Coba Quiz Juga! →', en: 'Take the Quiz Too! →' },
+  payTitle:      { id: '💳 Opsi Pembayaran', en: '💳 Payment Options' },
+  payNote:       { id: 'Setelah transfer, klik tombol unlock untuk konfirmasi via WhatsApp', en: 'After transfer, click unlock to confirm via WhatsApp' },
+  ctaTitle:      { id: '💜 Mau ketemu match-mu?', en: '💜 Want to meet your match?' },
+  ctaSub:        { id: 'Cocok — Dating app yang beneran ngerti kamu', en: 'Cocok — Dating app that truly gets you' },
+  ctaBtn:        { id: 'Gabung Cocok →', en: 'Join Cocok →' },
+  unlockBtn1:    { id: '🔓 Buka Laporan Lengkap', en: '🔓 Unlock Full Report' },
+  unlockBtn2:    { id: '🔓 Buka Profil Match Idealmu', en: '🔓 Unlock Your Ideal Match Profile' },
+};
+
+const questions = [
+  {
+    id: 'Pasanganmu lupa hari jadian kalian...',
+    en: 'Your partner forgot your anniversary...',
+    options: [
+      { id: '😶 Sakit hati tapi disimpan', en: '😶 Hurt but keep it inside', scores: { anxious: 2, reserved: 2 } },
+      { id: '😤 Langsung bilang', en: '😤 Tell them right away', scores: { open: 2, passionate: 1 } },
+      { id: '🤷 Santai aja', en: '🤷 No big deal', scores: { avoidant: 1, free: 2 } },
+      { id: '💬 Ajak ngobrol baik-baik', en: '💬 Talk it out nicely', scores: { secure: 2, open: 1, deep: 1 } }
+    ]
+  },
+  {
+    id: 'Kamu lihat pasangan lagi chat sama mantannya...',
+    en: 'You see your partner texting their ex...',
+    options: [
+      { id: '🤨 Langsung curiga', en: '🤨 Immediately suspicious', scores: { anxious: 2, passionate: 1 } },
+      { id: '🧘 Penasaran tapi tahan', en: '🧘 Curious but restrained', scores: { secure: 1, reserved: 1 } },
+      { id: '😌 Santai', en: '😌 Chill about it', scores: { avoidant: 1, free: 2 } },
+      { id: '🗣️ Tanya langsung', en: '🗣️ Ask directly', scores: { open: 2, secure: 1, deep: 1 } }
+    ]
+  },
+  {
+    id: 'Mana yang PALING penting dalam hubungan?',
+    en: 'What matters MOST in a relationship?',
+    options: [
+      { id: '🤝 Kepercayaan', en: '🤝 Trust', scores: { secure: 2, deep: 2, stability: 1 } },
+      { id: '⚡ Chemistry', en: '⚡ Chemistry', scores: { passionate: 2, adventure: 1 } },
+      { id: '⚖️ Kestabilan', en: '⚖️ Stability', scores: { stability: 2, steady: 2 } },
+      { id: '🌱 Berkembang bareng', en: '🌱 Growing together', scores: { growth: 3 } }
+    ]
+  },
+  {
+    id: 'Weekend ideal sama pasangan?',
+    en: 'Ideal weekend with your partner?',
+    options: [
+      { id: '🏠 Di rumah nonton', en: '🏠 Stay home & watch movies', scores: { stability: 1, steady: 1, time: 1 } },
+      { id: '🎉 Keluar seru-seruan', en: '🎉 Go out & have fun', scores: { adventure: 2, passionate: 1 } },
+      { id: '🗣️ Deep talk di cafe', en: '🗣️ Deep talk at a cafe', scores: { deep: 2, words: 1, open: 1 } },
+      { id: '🎯 Coba hal baru', en: '🎯 Try something new', scores: { growth: 2, adventure: 1 } }
+    ]
+  },
+  {
+    id: 'Cara kamu nunjukin sayang?',
+    en: 'How do you show love?',
+    options: [
+      { id: '🎁 Kasih hadiah/surprise', en: '🎁 Gifts & surprises', scores: { gifts: 2, romantic: 2 } },
+      { id: '🤗 Pelukan & quality time', en: '🤗 Hugs & quality time', scores: { touch: 1, time: 2, deep: 1 } },
+      { id: '💬 Kata-kata manis', en: '💬 Sweet words', scores: { words: 2, romantic: 1, open: 1 } },
+      { id: '🔧 Bantuin urusan dia', en: '🔧 Help with their stuff', scores: { acts: 2, steady: 1, growth: 1 } }
+    ]
+  },
+  {
+    id: 'Kalau berantem, kamu biasanya...',
+    en: 'When you fight, you usually...',
+    options: [
+      { id: '🚶 Butuh waktu sendiri dulu', en: '🚶 Need alone time first', scores: { avoidant: 2, reserved: 2 } },
+      { id: '🗣️ Mau selesaiin sekarang', en: '🗣️ Want to resolve it now', scores: { open: 2, passionate: 1 } },
+      { id: '😢 Nangis/emosional', en: '😢 Cry / get emotional', scores: { anxious: 2, romantic: 1 } },
+      { id: '🤔 Analisa masalahnya', en: '🤔 Analyze the problem', scores: { secure: 1, growth: 2 } }
+    ]
+  },
+  {
+    id: 'Yang bikin kamu tertarik pertama kali?',
+    en: 'What attracts you first?',
+    options: [
+      { id: '😂 Sense of humor', en: '😂 Sense of humor', scores: { free: 1, passionate: 1 } },
+      { id: '🧠 Kecerdasan', en: '🧠 Intelligence', scores: { growth: 2, deep: 1 } },
+      { id: '💪 Penampilan', en: '💪 Looks', scores: { passionate: 2 } },
+      { id: '❤️ Kebaikan hati', en: '❤️ Kindness', scores: { secure: 1, romantic: 2, deep: 1 } }
+    ]
+  },
+  {
+    id: 'Kamu lebih suka hubungan yang...',
+    en: 'You prefer relationships that are...',
+    options: [
+      { id: '🔥 Penuh passion & drama', en: '🔥 Full of passion & drama', scores: { passionate: 3, adventure: 1 } },
+      { id: '☀️ Tenang & stabil', en: '☀️ Calm & stable', scores: { steady: 3, stability: 2 } },
+      { id: '🌊 Mengalir aja', en: '🌊 Just go with the flow', scores: { free: 3 } },
+      { id: '🚀 Selalu berkembang', en: '🚀 Always growing', scores: { growth: 3 } }
+    ]
+  },
+  {
+    id: 'Red flag terbesar menurutmu?',
+    en: 'Biggest red flag for you?',
+    options: [
+      { id: '🤥 Bohong kecil', en: '🤥 Small lies', scores: { deep: 2, secure: 1 } },
+      { id: '📱 Sering main HP', en: '📱 Always on their phone', scores: { romantic: 1, time: 1, anxious: 1 } },
+      { id: '😶 Ga mau komunikasi', en: '😶 Won\'t communicate', scores: { open: 2, deep: 1 } },
+      { id: '👀 Masih stalk mantan', en: '👀 Still stalking their ex', scores: { passionate: 1, anxious: 1 } }
+    ]
+  },
+  {
+    id: 'Dalam 5 tahun, kamu pengen...',
+    en: 'In 5 years, you want to...',
+    options: [
+      { id: '💍 Menikah & settle down', en: '💍 Get married & settle down', scores: { stability: 3, steady: 2, romantic: 1 } },
+      { id: '✈️ Explore dunia bareng', en: '✈️ Explore the world together', scores: { adventure: 3, passionate: 1, free: 1 } },
+      { id: '💼 Sukses karir bareng', en: '💼 Build careers together', scores: { growth: 3 } },
+      { id: '🏠 Hidup sederhana bahagia', en: '🏠 Simple happy life', scores: { steady: 2, free: 1, stability: 1 } }
+    ]
+  }
+];
+
+// --- SCORING ---
+function calcType() {
+  const s = { deep: 0, passionate: 0, steady: 0, free: 0, growth: 0, romantic: 0, secure: 0, anxious: 0, avoidant: 0, open: 0, reserved: 0, adventure: 0, stability: 0, gifts: 0, touch: 0, words: 0, acts: 0, time: 0 };
+  answers.forEach(a => { Object.entries(a.scores).forEach(([k,v]) => { s[k] = (s[k]||0) + v; }); });
+  s.deep += s.secure + s.open;
+  s.passionate += s.anxious + s.adventure;
+  s.steady += s.stability + s.reserved;
+  s.free += s.avoidant;
+  s.growth += 0;
+  s.romantic += s.gifts + s.words;
+
+  const typeScores = { 'deep-connector': s.deep, 'passionate-explorer': s.passionate, 'steady-anchor': s.steady, 'free-spirit': s.free, 'growth-partner': s.growth, 'romantic-dreamer': s.romantic };
+  return Object.entries(typeScores).sort((a,b) => b[1] - a[1])[0][0];
+}
+
+// --- UI ---
+function show(id) { document.querySelectorAll('body > section').forEach(s => s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+
+function toggleLang() {
+  lang = lang === 'id' ? 'en' : 'id';
+  Object.entries(i18n).forEach(([id, t]) => { const el = document.getElementById(id); if (el) el.textContent = t[lang]; });
+  document.getElementById('langBtn').textContent = lang === 'id' ? '🇬🇧 EN' : '🇮🇩 ID';
+}
+
+function startQuiz() { currentQ = 0; answers = []; show('quiz'); renderQ(); }
+
+function renderQ() {
+  const q = questions[currentQ];
+  document.getElementById('questionText').textContent = q[lang];
+  document.getElementById('questionText').className = 'text-xl font-bold mb-6 slide-in-right';
+  document.getElementById('qNum').textContent = `${currentQ+1}/10`;
+  const pct = ((currentQ+1)*10);
+  document.getElementById('qPct').textContent = pct+'%';
+  document.getElementById('progressBar').style.width = pct+'%';
+  const c = document.getElementById('optionsContainer');
+  c.innerHTML = '';
+  q.options.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn w-full text-left bg-gray-800/80 hover:bg-purple-900/50 border border-gray-700 hover:border-purple-500 rounded-2xl px-5 py-4 text-base transition';
+    btn.textContent = o[lang];
+    btn.style.animationDelay = (i*0.07)+'s';
+    btn.onclick = () => selectOption(o);
+    c.appendChild(btn);
+  });
+}
+
+function selectOption(o) {
+  answers.push(o);
+  currentQ++;
+  if (currentQ >= 10) { showResult(); } else { renderQ(); }
+}
+
+function genId() { return Math.random().toString(36).substr(2,8).toUpperCase(); }
+
+function showResult() {
+  resultType = calcType();
+  quizId = genId();
+  const t = types[resultType];
+  document.getElementById('resultEmoji').textContent = t.emoji;
+  document.getElementById('resultType').textContent = t[lang] || t.en;
+  document.getElementById('resultDesc').textContent = typeDescs[resultType][lang];
+  const matchT = types[t.match];
+  const cautionT = types[t.caution];
+  document.getElementById('compatMatch').textContent = matchT.emoji + ' ' + (matchT[lang] || matchT.en);
+  document.getElementById('compatCaution').textContent = cautionT.emoji + ' ' + (cautionT[lang] || cautionT.en);
+  const shareUrl = `https://cocok.app?type=${resultType}&ref=${quizId}`;
+  document.getElementById('referralLink').textContent = shareUrl;
+  show('result');
+  window.scrollTo(0, 0);
+}
+
+function getShareUrl() { return `https://cocok.app?type=${resultType}&ref=${quizId}`; }
+function getShareText() {
+  const t = types[resultType];
+  return lang === 'id'
+    ? `${t.emoji} Aku tipe ${t.id} di Cocok! Coba quiz-nya: cocok.app`
+    : `${t.emoji} I'm ${t.en} on Cocok! Try the quiz: cocok.app`;
+}
+
+function shareWA() { window.open(`https://wa.me/?text=${encodeURIComponent(getShareText()+'\n'+getShareUrl())}`, '_blank'); }
+function shareTwitter() { window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(getShareText())}&url=${encodeURIComponent(getShareUrl())}`, '_blank'); }
+function copyLink() {
+  navigator.clipboard.writeText(getShareUrl()).then(() => {
+    const b = document.getElementById('copyBtn');
+    b.textContent = '✅ Copied!';
+    setTimeout(() => { b.textContent = i18n.copyBtn[lang]; }, 2000);
+  });
+}
+function shareIG() { alert(lang === 'id' ? '📸 Screenshot kartu hasilmu di atas dan share ke IG Story!' : '📸 Screenshot your result card above and share to IG Story!'); }
+
+function unlockReport(type) {
+  const t = types[resultType];
+  const name = t[lang] || t.en;
+  if (type === 'full') {
+    window.open(`https://wa.me/6281311024455?text=${encodeURIComponent(`Halo Cocok! Saya mau unlock Full Report (Rp 29k). Quiz ID: ${quizId}. Tipe saya: ${name}`)}`, '_blank');
+  } else {
+    window.open(`https://wa.me/6281311024455?text=${encodeURIComponent(`Halo Cocok! Saya mau unlock Ideal Match Report (Rp 49k). Quiz ID: ${quizId}. Tipe saya: ${name}`)}`, '_blank');
+  }
+}
+
+// --- INIT: check share link ---
+(function init() {
+  const params = new URLSearchParams(location.search);
+  const sharedType = params.get('type');
+  if (sharedType && types[sharedType]) {
+    const t = types[sharedType];
+    document.getElementById('sharedEmoji').textContent = t.emoji;
+    document.getElementById('sharedType').textContent = t[lang] || t.en;
+    document.getElementById('sharedDesc').textContent = typeDescs[sharedType][lang];
+    show('sharedResult');
+    document.getElementById('landing').classList.add('hidden');
+  }
+})();
+</script>
+</body>
+</html>
