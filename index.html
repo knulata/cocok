@@ -10,6 +10,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://cocok.app">
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 tailwind.config = {
   theme: {
@@ -39,6 +40,19 @@ body { font-family: 'Inter', sans-serif; }
 .option-btn:hover { transform: translateY(-2px); }
 .option-btn:active { transform: scale(0.97); }
 .result-card-bg { background: linear-gradient(135deg, #1e1b4b 0%, #581c87 40%, #831843 100%); }
+.share-card-wrap { position:fixed; left:-9999px; top:0; width:1080px; height:1080px; }
+#shareCard { width:1080px; height:1080px; background: linear-gradient(135deg, #1e1b4b 0%, #581c87 45%, #831843 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px; box-sizing:border-box; position:relative; overflow:hidden; font-family:'Inter',sans-serif; }
+#shareCard::before { content:''; position:absolute; top:-200px; right:-200px; width:500px; height:500px; background:radial-gradient(circle, rgba(236,72,153,0.25), transparent 70%); }
+#shareCard::after { content:''; position:absolute; bottom:-200px; left:-200px; width:500px; height:500px; background:radial-gradient(circle, rgba(168,85,247,0.25), transparent 70%); }
+#shareCard .sc-brand { font-size:22px; font-weight:700; color:rgba(196,132,252,0.8); letter-spacing:0.2em; text-transform:uppercase; margin-bottom:32px; }
+#shareCard .sc-emoji { font-size:120px; margin-bottom:24px; line-height:1; }
+#shareCard .sc-type { font-size:64px; font-weight:900; background:linear-gradient(90deg,#c084fc,#f472b6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:24px; text-align:center; line-height:1.1; }
+#shareCard .sc-desc { font-size:28px; color:rgba(209,213,219,0.9); text-align:center; max-width:800px; line-height:1.5; margin-bottom:48px; }
+#shareCard .sc-row { display:flex; gap:24px; margin-bottom:48px; width:100%; max-width:800px; }
+#shareCard .sc-pill { flex:1; background:rgba(255,255,255,0.08); border-radius:20px; padding:24px; text-align:center; }
+#shareCard .sc-pill-label { font-size:20px; font-weight:600; margin-bottom:8px; }
+#shareCard .sc-pill-value { font-size:22px; color:#fff; font-weight:700; }
+#shareCard .sc-cta { font-size:26px; color:rgba(196,132,252,0.9); font-weight:600; letter-spacing:0.05em; }
 .hero-gradient { background: radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.15) 0%, transparent 70%); }
 .floating { animation: float 3s ease-in-out infinite; }
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
@@ -452,7 +466,38 @@ function copyLink() {
     setTimeout(() => { b.textContent = i18n.copyBtn[lang]; }, 2000);
   });
 }
-function shareIG() { alert(lang === 'id' ? '📸 Screenshot kartu hasilmu di atas dan share ke IG Story!' : '📸 Screenshot your result card above and share to IG Story!'); }
+function shareIG() {
+  const t = types[resultType];
+  const desc = typeDescs[resultType];
+  const matchType = types[t.match];
+  const cautionType = types[t.caution];
+
+  // Populate share card
+  document.getElementById('scEmoji').textContent = t.emoji;
+  document.getElementById('scType').textContent = lang === 'id' ? t.id : t.en;
+  document.getElementById('scDesc').textContent = lang === 'id' ? desc.id : desc.en;
+  document.getElementById('scMatchLabel').textContent = lang === 'id' ? '💚 Cocok sama' : '💚 Best match';
+  document.getElementById('scMatchVal').textContent = (matchType.emoji + ' ' + (lang === 'id' ? matchType.id : matchType.en));
+  document.getElementById('scCautionLabel').textContent = lang === 'id' ? '⚠️ Hati-hati' : '⚠️ Watch out';
+  document.getElementById('scCautionVal').textContent = (cautionType.emoji + ' ' + (lang === 'id' ? cautionType.id : cautionType.en));
+
+  const wrap = document.getElementById('shareCardWrap');
+  wrap.style.display = 'block';
+
+  html2canvas(document.getElementById('shareCard'), {
+    width: 1080, height: 1080, scale: 1, useCORS: true, backgroundColor: null,
+    logging: false
+  }).then(canvas => {
+    wrap.style.display = 'none';
+    const link = document.createElement('a');
+    link.download = 'cocok-result.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(() => {
+    wrap.style.display = 'none';
+    alert(lang === 'id' ? '📸 Screenshot kartu hasilmu di atas dan share ke IG Story!' : '📸 Screenshot your result card above and share to IG Story!');
+  });
+}
 
 function unlockReport(type) {
   const t = types[resultType];
@@ -478,5 +523,26 @@ function unlockReport(type) {
   }
 })();
 </script>
+
+<!-- Hidden 1080x1080 share card for Instagram download -->
+<div id="shareCardWrap" class="share-card-wrap" style="display:none;">
+  <div id="shareCard">
+    <div class="sc-brand">cocok.app 💜</div>
+    <div class="sc-emoji" id="scEmoji"></div>
+    <div class="sc-type" id="scType"></div>
+    <div class="sc-desc" id="scDesc"></div>
+    <div class="sc-row">
+      <div class="sc-pill">
+        <div class="sc-pill-label" id="scMatchLabel" style="color:#4ade80;"></div>
+        <div class="sc-pill-value" id="scMatchVal"></div>
+      </div>
+      <div class="sc-pill">
+        <div class="sc-pill-label" id="scCautionLabel" style="color:#f87171;"></div>
+        <div class="sc-pill-value" id="scCautionVal"></div>
+      </div>
+    </div>
+    <div class="sc-cta">cocok.app — Cari yang Beneran Cocok</div>
+  </div>
+</div>
 </body>
 </html>
