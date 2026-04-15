@@ -179,11 +179,22 @@ function render(candidates) {
     ]);
     const scoreRing = el('div', { class: 'score-ring w-14 h-14 rounded-full flex items-center justify-center', style: '--pct:' + pct }, [scoreInner]);
 
-    const headerMeta = el('div', { class: 'flex-1 min-w-0' }, [
+    const isVerified = !!c.isVerified || c.source === 'cocok-pool';
+
+    const headerMetaChildren = [
       el('p', { class: 'text-xs text-purple-400 font-semibold', text: '#' + c.rank }),
       el('h3', { class: 'text-lg font-bold truncate', text: c.name || 'Profil' }),
       el('p', { class: 'text-xs text-gray-400 truncate', text: c.headline || c.source }),
-    ]);
+    ];
+    if (isVerified) {
+      headerMetaChildren.splice(1, 0,
+        el('span', {
+          class: 'inline-flex items-center gap-1 text-[10px] font-bold text-emerald-300 bg-emerald-900/50 border border-emerald-500/40 rounded-full px-2 py-0.5 mb-1',
+          text: '✓ Profil Cocok Verified',
+        }),
+      );
+    }
+    const headerMeta = el('div', { class: 'flex-1 min-w-0' }, headerMetaChildren);
     const header = el('div', { class: 'flex items-start gap-4 mb-3' }, [
       el('div', { class: 'relative flex-shrink-0' }, [scoreRing]),
       headerMeta,
@@ -208,15 +219,31 @@ function render(candidates) {
       ? el('div', { class: 'grid grid-cols-2 gap-2 mb-4' }, reasonsChildren)
       : null;
 
-    const link = el('a', {
-      href: c.url,
-      target: '_blank',
-      rel: 'noopener noreferrer',
-      class: 'block text-center w-full bg-white/10 hover:bg-white/20 font-semibold py-2.5 rounded-xl text-sm transition',
-      text: 'Lihat Profil di ' + c.source + ' →',
-    });
+    let link;
+    if (isVerified && c.contact) {
+      const href = c.contactType === 'ig'
+        ? 'https://instagram.com/' + String(c.contact).replace(/^@/, '')
+        : 'https://wa.me/' + String(c.contact).replace(/[^0-9]/g, '');
+      const label = c.contactType === 'ig'
+        ? '📩 Chat di Instagram →'
+        : '💬 Chat di WhatsApp →';
+      link = el('a', {
+        href, target: '_blank', rel: 'noopener noreferrer',
+        class: 'block text-center w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-bold py-2.5 rounded-xl text-sm transition hover:opacity-90',
+        text: label,
+      });
+    } else {
+      link = el('a', {
+        href: c.url, target: '_blank', rel: 'noopener noreferrer',
+        class: 'block text-center w-full bg-white/10 hover:bg-white/20 font-semibold py-2.5 rounded-xl text-sm transition',
+        text: 'Lihat Profil di ' + c.source + ' →',
+      });
+    }
 
-    const card = el('div', { class: 'card-bg rounded-2xl p-5 border border-purple-900/40' }, [
+    const cardClass = isVerified
+      ? 'card-bg rounded-2xl p-5 border border-emerald-500/60 ring-1 ring-emerald-400/20'
+      : 'card-bg rounded-2xl p-5 border border-purple-900/40';
+    const card = el('div', { class: cardClass }, [
       header,
       summary,
       reasons,

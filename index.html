@@ -155,6 +155,82 @@ body { font-family: 'Inter', sans-serif; }
       <div class="mt-3 bg-black/30 rounded-lg px-4 py-2 text-sm text-purple-300 font-mono break-all" id="referralLink"></div>
     </div>
 
+    <!-- Publish Profile (Free) -->
+    <div id="publishSection" class="relative bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-400/40 rounded-2xl p-6 mb-4 overflow-hidden">
+      <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl"></div>
+      <div class="relative">
+        <div class="flex items-center gap-2 mb-2 flex-wrap">
+          <span class="bg-green-500 text-black text-xs font-bold px-2 py-1 rounded-full">✨ GRATIS</span>
+          <span class="bg-white/10 text-xs font-semibold px-2 py-1 rounded-full">Opt-in pool</span>
+        </div>
+        <h3 class="text-xl font-bold mb-2">Biar kamu ditemukan orang yang cocok 💜</h3>
+        <p class="text-gray-300 text-sm mb-4">Publikasikan profilmu di pool Cocok (gratis). Agen AI akan memunculkan kamu ke orang lain yang punya pola cinta yang cocok — hanya yang beneran serius & sudah bayar.</p>
+
+        <div id="publishForm" class="space-y-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Nama panggilan</label>
+            <input type="text" id="ppName" maxlength="60" placeholder="Rani / Dimas / ..." class="w-full bg-gray-900/80 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">Umur</label>
+              <input type="number" id="ppAge" min="18" max="80" placeholder="27" class="w-full bg-gray-900/80 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">Gender</label>
+              <select id="ppGender" class="w-full bg-gray-900/80 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+                <option value="">Pilih...</option>
+                <option value="female">Perempuan</option>
+                <option value="male">Laki-laki</option>
+                <option value="other">Lainnya</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Kota</label>
+            <input type="text" id="ppCity" maxlength="60" placeholder="Jakarta, Bandung, Surabaya..." class="w-full bg-gray-900/80 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Cari gender</label>
+            <select id="ppLookingForGender" class="w-full bg-gray-900/80 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+              <option value="any">Siapa saja</option>
+              <option value="female">Perempuan</option>
+              <option value="male">Laki-laki</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Bio singkat (30-600 karakter)</label>
+            <textarea id="ppBio" rows="3" maxlength="600" placeholder="Ceritakan tentang dirimu, love language, dan tipe hubungan yang kamu inginkan..." class="w-full bg-gray-900/80 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500"></textarea>
+            <p class="text-[10px] text-gray-500 mt-1"><span id="ppBioCount">0</span>/600</p>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Kontak</label>
+            <div class="flex gap-2">
+              <select id="ppContactType" class="bg-gray-900/80 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+                <option value="wa">WA</option>
+                <option value="ig">IG</option>
+              </select>
+              <input type="text" id="ppContact" maxlength="60" placeholder="628xxx atau @username" class="flex-1 bg-gray-900/80 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500" />
+            </div>
+          </div>
+          <label class="flex items-start gap-2 text-xs text-gray-400 cursor-pointer">
+            <input type="checkbox" id="ppConsent" class="mt-0.5 accent-purple-500" />
+            <span>Saya setuju profil saya dipublikasikan di pool Cocok dan bisa ditemukan oleh pengguna berbayar yang cocok. Saya bisa menghapus profil saya kapan saja.</span>
+          </label>
+          <button onclick="publishProfile()" id="publishBtn" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 font-bold py-3 rounded-xl hover:opacity-90 transition text-black">✨ Publikasikan (Gratis)</button>
+          <p id="publishHint" class="text-center text-xs text-gray-500"></p>
+        </div>
+
+        <div id="publishSuccess" class="hidden text-center py-6">
+          <div class="text-5xl mb-3">🎉</div>
+          <h4 class="text-lg font-bold mb-2">Profilmu sudah publikasi!</h4>
+          <p class="text-sm text-gray-300 mb-3">Sekarang kamu bisa ditemukan oleh orang yang pola cintanya cocok.</p>
+          <div class="bg-black/30 rounded-lg p-3 text-xs font-mono text-purple-300 break-all mb-2" id="publishIdDisplay"></div>
+          <p class="text-[10px] text-gray-500">Simpan delete token di atas kalau mau hapus profilmu nanti.</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Premium: Full Report -->
     <div class="bg-gray-900 rounded-2xl p-6 mb-4 relative overflow-hidden border border-purple-500/30">
       <div class="flex items-center gap-2 mb-2">
@@ -558,6 +634,82 @@ function unlockReport(type) {
     window.open(`https://wa.me/6281311024455?text=${encodeURIComponent(`Halo Cocok! Saya mau unlock Ideal Match Report (Rp 49k). Quiz ID: ${quizId}. Tipe saya: ${name}`)}`, '_blank');
   }
 }
+
+async function publishProfile() {
+  const btn = document.getElementById('publishBtn');
+  const hint = document.getElementById('publishHint');
+
+  const name = document.getElementById('ppName').value.trim();
+  const ageRaw = document.getElementById('ppAge').value;
+  const age = ageRaw ? parseInt(ageRaw, 10) : null;
+  const city = document.getElementById('ppCity').value.trim();
+  const gender = document.getElementById('ppGender').value;
+  const lookingForGender = document.getElementById('ppLookingForGender').value;
+  const bio = document.getElementById('ppBio').value.trim();
+  const contact = document.getElementById('ppContact').value.trim();
+  const contactType = document.getElementById('ppContactType').value;
+  const consent = document.getElementById('ppConsent').checked;
+
+  function setError(msg) {
+    hint.textContent = msg;
+    hint.className = 'text-center text-xs text-red-400';
+  }
+
+  if (!consent) return setError('Kamu harus setuju dulu sebelum publikasi.');
+  if (!name || name.length < 2) return setError('Isi nama panggilanmu.');
+  if (!gender) return setError('Pilih gender.');
+  if (!city || city.length < 2) return setError('Isi kota.');
+  if (!bio || bio.length < 30) return setError('Bio minimal 30 karakter.');
+  if (!contact || contact.length < 3) return setError('Isi kontak WA atau IG.');
+  if (age !== null && (age < 18 || age > 80)) return setError('Umur harus 18-80.');
+
+  if (!resultType) return setError('Selesaikan quiz dulu.');
+  const t = types[resultType];
+  const loveType = t[lang] || t.en;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Mengirim...';
+  hint.textContent = '';
+
+  const quizProfile = {
+    loveType,
+    emoji: t.emoji,
+    description: typeDescs[resultType][lang],
+    answers: answers.reduce((acc, a, i) => { acc['q' + (i + 1)] = a[lang]; return acc; }, {}),
+  };
+
+  try {
+    const res = await fetch('/api/publish-profile', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        loveType,
+        loveTypeKey: resultType,
+        name, age, city, gender, lookingForGender,
+        bio, contact, contactType,
+        quizProfile, consent: true,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.id) throw new Error(data.error || 'Gagal publikasi.');
+    document.getElementById('publishForm').classList.add('hidden');
+    const success = document.getElementById('publishSuccess');
+    success.classList.remove('hidden');
+    document.getElementById('publishIdDisplay').textContent =
+      'ID: ' + data.id + '\nDelete token: ' + data.deleteToken;
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = '✨ Publikasikan (Gratis)';
+    setError(err.message || 'Terjadi kesalahan.');
+  }
+}
+
+document.addEventListener('input', (e) => {
+  if (e.target && e.target.id === 'ppBio') {
+    const c = document.getElementById('ppBioCount');
+    if (c) c.textContent = e.target.value.length;
+  }
+});
 
 let matchFinderState = 'collapsed';
 async function findRealMatches() {

@@ -40,6 +40,32 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
       await sql()`CREATE INDEX IF NOT EXISTS candidates_job_id_idx ON candidates(job_id)`;
+      await sql()`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS contact TEXT`;
+      await sql()`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS contact_type TEXT`;
+      await sql()`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS is_verified BOOLEAN NOT NULL DEFAULT FALSE`;
+      await sql()`
+        CREATE TABLE IF NOT EXISTS public_profiles (
+          id TEXT PRIMARY KEY,
+          love_type TEXT NOT NULL,
+          love_type_key TEXT NOT NULL,
+          name TEXT NOT NULL,
+          age INT,
+          city TEXT NOT NULL,
+          gender TEXT NOT NULL,
+          looking_for_gender TEXT,
+          bio TEXT NOT NULL,
+          contact TEXT NOT NULL,
+          contact_type TEXT NOT NULL,
+          quiz_profile JSONB,
+          consent_given_at TIMESTAMPTZ NOT NULL,
+          is_visible BOOLEAN NOT NULL DEFAULT TRUE,
+          delete_token TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `;
+      await sql()`CREATE INDEX IF NOT EXISTS public_profiles_city_idx ON public_profiles(city)`;
+      await sql()`CREATE INDEX IF NOT EXISTS public_profiles_love_type_idx ON public_profiles(love_type_key)`;
+      await sql()`CREATE INDEX IF NOT EXISTS public_profiles_visible_idx ON public_profiles(is_visible)`;
     })();
   }
   return schemaReady;
@@ -73,6 +99,9 @@ export type Candidate = {
   matchScore: number | null;
   whyMatch: string | null;
   whyCaution: string | null;
+  contact?: string | null;
+  contactType?: string | null;
+  isVerified?: boolean;
 };
 
 export async function createJob(
@@ -109,10 +138,11 @@ export async function saveCandidates(jobId: string, candidates: Candidate[]): Pr
     await sql()`
       INSERT INTO candidates (
         job_id, rank, name, headline, url, source, summary,
-        match_score, why_match, why_caution
+        match_score, why_match, why_caution, contact, contact_type, is_verified
       ) VALUES (
         ${jobId}, ${c.rank}, ${c.name}, ${c.headline}, ${c.url}, ${c.source},
-        ${c.summary}, ${c.matchScore}, ${c.whyMatch}, ${c.whyCaution}
+        ${c.summary}, ${c.matchScore}, ${c.whyMatch}, ${c.whyCaution},
+        ${c.contact ?? null}, ${c.contactType ?? null}, ${c.isVerified ?? false}
       )
     `;
   }
@@ -129,9 +159,91 @@ export async function getJob(id: string) {
 export async function getCandidates(jobId: string): Promise<Candidate[]> {
   const rows = await sql()`
     SELECT rank, name, headline, url, source, summary,
-           match_score AS "matchScore", why_match AS "whyMatch", why_caution AS "whyCaution"
+           match_score AS "matchScore", why_match AS "whyMatch", why_caution AS "whyCaution",
+           contact, contact_type AS "contactType", is_verified AS "isVerified"
     FROM candidates WHERE job_id = ${jobId}
     ORDER BY rank ASC
   `;
   return rows as Candidate[];
+}
+
+export type PublicProfile = {
+  id: string;
+  loveType: string;
+  loveTypeKey: string;
+  name: string;
+  age: number | null;
+  city: string;
+  gender: string;
+  lookingForGender: string | null;
+  bio: string;
+  contact: string;
+  contactType: string;
+};
+
+export type PublicProfileInput = {
+  id: string;
+  loveType: string;
+  loveTypeKey: string;
+  name: string;
+  age: number | null;
+  city: string;
+  gender: string;
+  lookingForGender: string | null;
+  bio: string;
+  contact: string;
+  contactType: string;
+  quizProfile: QuizProfile | null;
+  deleteToken: string;
+};
+
+export async function createPublicProfile(p: PublicProfileInput): Promise<void> {
+  await sql()`
+    INSERT INTO public_profiles (
+      id, love_type, love_type_key, name, age, city, gender,
+      looking_for_gender, bio, contact, contact_type, quiz_profile,
+      consent_given_at, is_visible, delete_token
+    ) VALUES (
+      ${p.id}, ${p.loveType}, ${p.loveTypeKey}, ${p.name}, ${p.age},
+      ${p.city}, ${p.gender}, ${p.lookingForGender}, ${p.bio}, ${p.contact},
+      ${p.contactType}, ${p.quizProfile ? JSON.stringify(p.quizProfile) : null},
+      NOW(), TRUE, ${p.deleteToken}
+    )
+  `;
+}
+
+export async function listPublicProfiles(opts: {
+  city?: string;
+  ageMin?: number;
+  ageMax?: number;
+  excludeGender?: string;
+  lookingForGender?: string;
+  limit?: number;
+}): Promise<PublicProfile[]> {
+  const limit = opts.limit ?? 50;
+  const cityLike = opts.city ? `%${opts.city.toLowerCase()}%` : null;
+  const rows = await sql()`
+    SELECT id, love_type AS "loveType", love_type_key AS "loveTypeKey",
+           name, age, city, gender, looking_for_gender AS "lookingForGender",
+           bio, contact, contact_type AS "contactType"
+    FROM public_profiles
+    WHERE is_visible = TRUE
+      AND (${cityLike}::text IS NULL OR LOWER(city) LIKE ${cityLike}::text)
+      AND (${opts.ageMin ?? null}::int IS NULL OR age IS NULL OR age >= ${opts.ageMin ?? null}::int)
+      AND (${opts.ageMax ?? null}::int IS NULL OR age IS NULL OR age <= ${opts.ageMax ?? null}::int)
+      AND (${opts.excludeGender ?? null}::text IS NULL OR gender <> ${opts.excludeGender ?? null}::text)
+    ORDER BY created_at DESC
+    LIMIT ${limit}
+  `;
+  return rows as PublicProfile[];
+}
+
+export async function deletePublicProfile(id: string, token: string): Promise<boolean> {
+  const rows = await sql()`
+    UPDATE public_profiles
+    SET is_visible = FALSE
+    WHERE id = ${id} AND delete_token = ${token}
+    RETURNING id
+  `;
+  return rows.length > 0;
 }
