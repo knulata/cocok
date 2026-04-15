@@ -206,6 +206,56 @@ body { font-family: 'Inter', sans-serif; }
       <p class="text-center text-xs text-gray-500 mt-2">Yang paling sering di-unlock! 🔥</p>
     </div>
 
+    <!-- Premium: Real Match Finder (AI Agent) -->
+    <div class="bg-gray-900 rounded-2xl p-6 mb-4 relative overflow-hidden border border-purple-400/50">
+      <div class="flex items-center gap-2 mb-2 flex-wrap">
+        <span class="bg-purple-600 text-xs font-bold px-2 py-1 rounded-full">🔒 PREMIUM</span>
+        <span class="bg-gradient-to-r from-purple-400 to-pink-400 text-black text-xs font-bold px-2 py-1 rounded-full">✨ TERBARU</span>
+      </div>
+      <h3 class="text-xl font-bold mb-2" id="premTitle3">Cari Match Real (AI Agent) 🤖</h3>
+      <p class="text-gray-400 text-sm mb-3" id="premDesc3">Agen AI akan menyisir LinkedIn, Twitter/X, Bluesky, Medium, dan blog untuk menemukan <strong class="text-white">orang sungguhan</strong> yang paling cocok dengan pola cintamu:</p>
+      <ul class="text-sm text-gray-300 space-y-2 mb-4">
+        <li>🔍 <strong>5 Kandidat Terbaik</strong> — Profil publik nyata, dinilai 0-100 untuk kecocokan</li>
+        <li>💚 <strong>Alasan Cocok</strong> — Kenapa tiap kandidat cocok dengan pola cintamu</li>
+        <li>⚠️ <strong>Hati-hati</strong> — Red flag yang perlu kamu waspadai</li>
+        <li>🔗 <strong>Link Profil</strong> — Langsung cek & mulai percakapan</li>
+      </ul>
+      <div id="matchFinderForm" class="hidden space-y-3 mb-4 bg-black/30 rounded-xl p-4">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Kota / Lokasi</label>
+          <input type="text" id="mfCity" placeholder="Jakarta, Bandung, Surabaya..." class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Umur min</label>
+            <input type="number" id="mfAgeMin" placeholder="22" min="18" max="80" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Umur max</label>
+            <input type="number" id="mfAgeMax" placeholder="32" min="18" max="80" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Mencari</label>
+          <select id="mfLookingFor" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+            <option value="serious">Hubungan serius</option>
+            <option value="casual">Casual dating</option>
+            <option value="friendship">Teman dulu, lihat ke mana</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Catatan tambahan (opsional)</label>
+          <textarea id="mfNotes" rows="2" placeholder="Minat, hobi, tipe yang kamu cari..." class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500"></textarea>
+        </div>
+      </div>
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-2xl font-black text-purple-400">Rp 149.000</p>
+        <p class="text-xs text-gray-500 line-through">Rp 299.000</p>
+      </div>
+      <button onclick="findRealMatches()" class="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 font-bold py-3 rounded-xl hover:opacity-90 transition" id="unlockBtn3">🤖 Mulai Cari Match Real</button>
+      <p class="text-center text-xs text-gray-500 mt-2" id="matchFinderHint">Pencarian butuh 30-90 detik. Powered by AI.</p>
+    </div>
+
     <!-- Payment Info -->
     <div class="bg-gray-900/50 rounded-2xl p-5 mb-6 text-center text-sm text-gray-400">
       <p class="font-semibold text-white mb-2" id="payTitle">💳 Opsi Pembayaran</p>
@@ -506,6 +556,73 @@ function unlockReport(type) {
     window.open(`https://wa.me/6281311024455?text=${encodeURIComponent(`Halo Cocok! Saya mau unlock Full Report (Rp 29k). Quiz ID: ${quizId}. Tipe saya: ${name}`)}`, '_blank');
   } else {
     window.open(`https://wa.me/6281311024455?text=${encodeURIComponent(`Halo Cocok! Saya mau unlock Ideal Match Report (Rp 49k). Quiz ID: ${quizId}. Tipe saya: ${name}`)}`, '_blank');
+  }
+}
+
+let matchFinderState = 'collapsed';
+async function findRealMatches() {
+  const form = document.getElementById('matchFinderForm');
+  const btn = document.getElementById('unlockBtn3');
+  const hint = document.getElementById('matchFinderHint');
+
+  if (matchFinderState === 'collapsed') {
+    form.classList.remove('hidden');
+    btn.textContent = '🚀 Kirim & Mulai Pencarian';
+    matchFinderState = 'form';
+    return;
+  }
+  if (matchFinderState === 'running') return;
+
+  const city = document.getElementById('mfCity').value.trim();
+  const ageMin = parseInt(document.getElementById('mfAgeMin').value, 10);
+  const ageMax = parseInt(document.getElementById('mfAgeMax').value, 10);
+  const lookingFor = document.getElementById('mfLookingFor').value;
+  const notes = document.getElementById('mfNotes').value.trim();
+
+  if (!city) {
+    hint.textContent = 'Mohon isi kota terlebih dahulu.';
+    hint.className = 'text-center text-xs text-red-400 mt-2';
+    return;
+  }
+
+  matchFinderState = 'running';
+  btn.disabled = true;
+  btn.textContent = '⏳ Mencari...';
+  hint.textContent = 'Mohon tunggu, ini bisa 30-90 detik. Jangan tutup halaman.';
+  hint.className = 'text-center text-xs text-gray-400 mt-2';
+
+  const t = types[resultType];
+  const profile = {
+    loveType: t[lang] || t.en,
+    emoji: t.emoji,
+    description: typeDescs[resultType][lang],
+    answers: answers.reduce((acc, a, i) => { acc['q' + (i + 1)] = a[lang]; return acc; }, {}),
+  };
+  const filters = {
+    city,
+    ageMin: Number.isFinite(ageMin) ? ageMin : undefined,
+    ageMax: Number.isFinite(ageMax) ? ageMax : undefined,
+    lookingFor,
+    notes: notes || undefined,
+  };
+
+  try {
+    const res = await fetch('/api/find-matches', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ profile, filters }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.id) {
+      throw new Error(data.error || 'Gagal memulai pencarian.');
+    }
+    location.href = '/results?id=' + encodeURIComponent(data.id);
+  } catch (err) {
+    matchFinderState = 'form';
+    btn.disabled = false;
+    btn.textContent = '🚀 Kirim & Mulai Pencarian';
+    hint.textContent = err.message || 'Terjadi kesalahan. Coba lagi.';
+    hint.className = 'text-center text-xs text-red-400 mt-2';
   }
 }
 

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hasil Pencarian 💜 Cocok</title>
+<meta name="description" content="Kandidat pasangan yang paling cocok untuk kamu, hasil pencarian agen AI.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: { 400: '#c084fc', 500: '#a855f7', 600: '#9333ea', 700: '#7e22ce', 800: '#6b21a8', 900: '#581c87' },
+        pink: { 400: '#f472b6', 500: '#ec4899' }
+      }
+    }
+  }
+}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+body { font-family: 'Inter', sans-serif; }
+.hero-gradient { background: radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.15) 0%, transparent 70%); }
+.card-bg { background: linear-gradient(135deg, rgba(30,27,75,0.6) 0%, rgba(88,28,135,0.4) 50%, rgba(131,24,67,0.4) 100%); }
+.slide-up { animation: slideUp 0.4s ease-out; }
+@keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.pulse-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
+@keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+.score-ring { background: conic-gradient(from 0deg, #a855f7 var(--pct), rgba(255,255,255,0.1) var(--pct)); }
+</style>
+</head>
+<body class="bg-gray-950 text-white min-h-screen hero-gradient">
+
+<header class="max-w-2xl mx-auto px-4 py-6 flex items-center justify-between">
+  <a href="/" class="text-xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">💜 Cocok</a>
+  <a href="/" class="text-sm text-gray-400 hover:text-white transition">← Kembali</a>
+</header>
+
+<main class="max-w-2xl mx-auto px-4 pb-16">
+
+  <section id="loading" class="text-center py-16">
+    <div class="text-6xl mb-6">🔍</div>
+    <h1 class="text-2xl font-black mb-3">Agen AI sedang mencari...</h1>
+    <p class="text-gray-400 max-w-md mx-auto leading-relaxed mb-8">
+      Menyisir LinkedIn, X, Bluesky, blog, dan Medium untuk menemukan orang-orang yang paling cocok dengan pola cintamu.
+    </p>
+    <div class="flex justify-center gap-2 mb-8">
+      <span class="w-2 h-2 bg-purple-500 rounded-full pulse-dot"></span>
+      <span class="w-2 h-2 bg-purple-500 rounded-full pulse-dot" style="animation-delay:0.2s"></span>
+      <span class="w-2 h-2 bg-purple-500 rounded-full pulse-dot" style="animation-delay:0.4s"></span>
+    </div>
+    <ul class="text-sm text-gray-500 space-y-1 max-w-xs mx-auto text-left">
+      <li id="step1">⏳ Menganalisis pola cintamu</li>
+      <li id="step2" class="opacity-50">⏳ Membangun query pencarian</li>
+      <li id="step3" class="opacity-50">⏳ Menyisir internet</li>
+      <li id="step4" class="opacity-50">⏳ Menilai kecocokan</li>
+    </ul>
+    <p class="text-xs text-gray-600 mt-8">Ini butuh 30-90 detik. Jangan tutup halaman.</p>
+  </section>
+
+  <section id="error" class="hidden text-center py-16">
+    <div class="text-6xl mb-6">😢</div>
+    <h1 class="text-2xl font-black mb-3">Terjadi Kesalahan</h1>
+    <p class="text-gray-400 mb-6" id="errorMsg"></p>
+    <a href="/" class="inline-block bg-gradient-to-r from-purple-600 to-pink-600 font-bold px-6 py-3 rounded-xl hover:opacity-90 transition">Coba Lagi</a>
+  </section>
+
+  <section id="results" class="hidden slide-up">
+    <div class="text-center mb-8">
+      <p class="text-xs text-purple-300 uppercase tracking-widest mb-2">Hasil Pencarian AI</p>
+      <h1 class="text-3xl font-black mb-2 bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">Kandidat Pasanganmu</h1>
+      <p class="text-gray-400 text-sm" id="resultCount"></p>
+    </div>
+    <div id="candidates" class="space-y-4"></div>
+
+    <div class="mt-10 bg-gray-900/60 border border-purple-700/30 rounded-2xl p-5 text-center">
+      <p class="text-sm text-gray-400 mb-2">💡 <strong class="text-white">Catatan Penting</strong></p>
+      <p class="text-xs text-gray-500 leading-relaxed">
+        Ini adalah kandidat dari profil publik di internet. Bukan jaminan mereka single atau tertarik.
+        Gunakan sebagai inspirasi — mulai percakapan secara sopan dan tulus.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const jobId = new URLSearchParams(location.search).get('id');
+const loadingEl = document.getElementById('loading');
+const errorEl = document.getElementById('error');
+const resultsEl = document.getElementById('results');
+
+if (!jobId) {
+  loadingEl.classList.add('hidden');
+  errorEl.classList.remove('hidden');
+  document.getElementById('errorMsg').textContent = 'ID pencarian tidak ditemukan.';
+} else {
+  poll();
+}
+
+function advanceStep(n) {
+  for (let i = 1; i <= n; i++) {
+    const el = document.getElementById('step' + i);
+    if (el) {
+      el.classList.remove('opacity-50');
+      el.textContent = el.textContent.replace('⏳', '✓');
+    }
+  }
+}
+
+let stepCursor = 1;
+const stepTimer = setInterval(() => {
+  if (stepCursor < 4) { advanceStep(stepCursor); stepCursor++; }
+}, 8000);
+
+async function poll() {
+  try {
+    const res = await fetch('/api/jobs/' + encodeURIComponent(jobId));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    if (data.status === 'completed') {
+      clearInterval(stepTimer);
+      render(data.candidates || []);
+      return;
+    }
+    if (data.status === 'failed') {
+      clearInterval(stepTimer);
+      loadingEl.classList.add('hidden');
+      errorEl.classList.remove('hidden');
+      document.getElementById('errorMsg').textContent = data.error || 'Agen gagal menemukan kandidat.';
+      return;
+    }
+    setTimeout(poll, 3000);
+  } catch (err) {
+    clearInterval(stepTimer);
+    loadingEl.classList.add('hidden');
+    errorEl.classList.remove('hidden');
+    document.getElementById('errorMsg').textContent = err.message;
+  }
+}
+
+function el(tag, props, children) {
+  const node = document.createElement(tag);
+  if (props) {
+    for (const [k, v] of Object.entries(props)) {
+      if (v == null) continue;
+      if (k === 'class') node.className = v;
+      else if (k === 'style') node.setAttribute('style', v);
+      else if (k === 'text') node.textContent = v;
+      else node.setAttribute(k, v);
+    }
+  }
+  if (children) for (const c of children) if (c) node.appendChild(c);
+  return node;
+}
+
+function render(candidates) {
+  loadingEl.classList.add('hidden');
+  resultsEl.classList.remove('hidden');
+
+  const countEl = document.getElementById('resultCount');
+  if (candidates.length === 0) {
+    countEl.textContent = 'Tidak ada kandidat ditemukan. Coba filter yang berbeda.';
+    return;
+  }
+  countEl.textContent = candidates.length + ' orang paling cocok';
+
+  const container = document.getElementById('candidates');
+  while (container.firstChild) container.removeChild(container.firstChild);
+
+  for (const c of candidates) {
+    const score = c.matchScore != null ? c.matchScore : 0;
+    const pct = Math.max(0, Math.min(100, score)) + '%';
+
+    const scoreInner = el('div', { class: 'w-11 h-11 bg-gray-950 rounded-full flex items-center justify-center' }, [
+      el('span', { class: 'text-sm font-black', text: String(score) }),
+    ]);
+    const scoreRing = el('div', { class: 'score-ring w-14 h-14 rounded-full flex items-center justify-center', style: '--pct:' + pct }, [scoreInner]);
+
+    const headerMeta = el('div', { class: 'flex-1 min-w-0' }, [
+      el('p', { class: 'text-xs text-purple-400 font-semibold', text: '#' + c.rank }),
+      el('h3', { class: 'text-lg font-bold truncate', text: c.name || 'Profil' }),
+      el('p', { class: 'text-xs text-gray-400 truncate', text: c.headline || c.source }),
+    ]);
+    const header = el('div', { class: 'flex items-start gap-4 mb-3' }, [
+      el('div', { class: 'relative flex-shrink-0' }, [scoreRing]),
+      headerMeta,
+    ]);
+
+    const summary = c.summary ? el('p', { class: 'text-sm text-gray-300 mb-3 leading-relaxed', text: c.summary }) : null;
+
+    const reasonsChildren = [];
+    if (c.whyMatch) {
+      reasonsChildren.push(el('div', { class: 'bg-green-950/40 border border-green-800/30 rounded-lg p-2' }, [
+        el('p', { class: 'text-[10px] text-green-400 font-bold uppercase mb-1', text: '💚 Cocok' }),
+        el('p', { class: 'text-xs text-gray-300', text: c.whyMatch }),
+      ]));
+    }
+    if (c.whyCaution) {
+      reasonsChildren.push(el('div', { class: 'bg-red-950/40 border border-red-800/30 rounded-lg p-2' }, [
+        el('p', { class: 'text-[10px] text-red-400 font-bold uppercase mb-1', text: '⚠️ Hati-hati' }),
+        el('p', { class: 'text-xs text-gray-300', text: c.whyCaution }),
+      ]));
+    }
+    const reasons = reasonsChildren.length
+      ? el('div', { class: 'grid grid-cols-2 gap-2 mb-4' }, reasonsChildren)
+      : null;
+
+    const link = el('a', {
+      href: c.url,
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      class: 'block text-center w-full bg-white/10 hover:bg-white/20 font-semibold py-2.5 rounded-xl text-sm transition',
+      text: 'Lihat Profil di ' + c.source + ' →',
+    });
+
+    const card = el('div', { class: 'card-bg rounded-2xl p-5 border border-purple-900/40' }, [
+      header,
+      summary,
+      reasons,
+      link,
+    ]);
+    container.appendChild(card);
+  }
+}
+</script>
+
+</body>
+</html>
