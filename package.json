@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.37.0",
     "@vercel/node": "^3.2.29",
     "exa-js": "^1.5.13",
     "openai": "^4.77.0"

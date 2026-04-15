@@ -298,6 +298,10 @@ body { font-family: 'Inter', sans-serif; }
       </ul>
       <div id="matchFinderForm" class="hidden space-y-3 mb-4 bg-black/30 rounded-xl p-4">
         <div>
+          <label class="block text-xs text-gray-400 mb-1">Nomor WhatsApp-mu (hasil dikirim via WA)</label>
+          <input type="text" id="mfWhatsapp" placeholder="0812xxxxxxx atau 62812xxxxxxx" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500" />
+        </div>
+        <div>
           <label class="block text-xs text-gray-400 mb-1">Kota / Lokasi</label>
           <input type="text" id="mfCity" placeholder="Jakarta, Bandung, Surabaya..." class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500" />
         </div>
@@ -725,6 +729,7 @@ async function findRealMatches() {
   }
   if (matchFinderState === 'running') return;
 
+  const searcherWhatsapp = document.getElementById('mfWhatsapp').value.trim();
   const city = document.getElementById('mfCity').value.trim();
   const ageMin = parseInt(document.getElementById('mfAgeMin').value, 10);
   const ageMax = parseInt(document.getElementById('mfAgeMax').value, 10);
@@ -733,6 +738,11 @@ async function findRealMatches() {
 
   if (!city) {
     hint.textContent = 'Mohon isi kota terlebih dahulu.';
+    hint.className = 'text-center text-xs text-red-400 mt-2';
+    return;
+  }
+  if (searcherWhatsapp && !/^\+?62?0?8[0-9]{7,12}$/.test(searcherWhatsapp.replace(/[^0-9+]/g, ''))) {
+    hint.textContent = 'Format nomor WhatsApp tidak valid.';
     hint.className = 'text-center text-xs text-red-400 mt-2';
     return;
   }
@@ -762,7 +772,7 @@ async function findRealMatches() {
     const res = await fetch('/api/find-matches', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ profile, filters }),
+      body: JSON.stringify({ profile, filters, searcherWhatsapp: searcherWhatsapp || undefined }),
     });
     const data = await res.json();
     if (!res.ok || !data.id) {

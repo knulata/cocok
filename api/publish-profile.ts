@@ -6,6 +6,7 @@ import {
   type PublicProfileInput,
   type QuizProfile,
 } from '../lib/db';
+import { getClientKey, getPublishLimiter } from '../lib/ratelimit';
 
 type Body = {
   loveType?: string;
@@ -29,6 +30,22 @@ export default async function handler(
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'method_not_allowed' });
     return;
+  }
+
+  try {
+    const key = getClientKey(req.headers);
+    const rl = await getPublishLimiter().limit(key);
+    res.setHeader('X-RateLimit-Limit', rl.limit);
+    res.setHeader('X-RateLimit-Remaining', rl.remaining);
+    if (!rl.success) {
+      res.status(429).json({
+        error: 'rate_limited',
+        message: 'Terlalu banyak permintaan. Coba lagi nanti.',
+      });
+      return;
+    }
+  } catch (err) {
+    console.error('[ratelimit] publish-profile failed', err);
   }
 
   const body = (req.body ?? {}) as Body;
