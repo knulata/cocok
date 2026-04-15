@@ -1,3 +1,4 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { randomUUID } from 'node:crypto';
 import {
   createJob,
@@ -6,30 +7,34 @@ import {
   updateJobStatus,
   type MatchFilters,
   type QuizProfile,
-} from '../lib/db.js';
-import { findMatches } from '../lib/agent.js';
+} from '../lib/db';
+import { findMatches } from '../lib/agent';
 
-export const config = { maxDuration: 300 };
-
-export default async function handler(req: Request): Promise<Response> {
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse,
+): Promise<void> {
   if (req.method !== 'POST') {
-    return json({ error: 'method_not_allowed' }, 405);
+    res.status(405).json({ error: 'method_not_allowed' });
+    return;
   }
 
-  let body: { profile?: QuizProfile; filters?: MatchFilters };
-  try {
-    body = await req.json();
-  } catch {
-    return json({ error: 'invalid_json' }, 400);
-  }
-
-  const profile = body.profile;
-  const filters = body.filters ?? {};
+  const body = req.body as { profile?: QuizProfile; filters?: MatchFilters } | undefined;
+  const profile = body?.profile;
+  const filters = body?.filters ?? {};
   if (!profile?.loveType) {
-    return json({ error: 'missing_profile' }, 400);
+    res.status(400).json({ error: 'missing_profile' });
+    return;
   }
 
-  await ensureSchema();
+  try {
+    await ensureSchema();
+  } catch (err) {
+    console.error('Schema bootstrap failed', err);
+    res.status(500).json({ error: 'database_unavailable' });
+    return;
+  }
+
   const id = randomUUID();
   await createJob(id, profile, filters);
 
@@ -38,18 +43,11 @@ export default async function handler(req: Request): Promise<Response> {
     const candidates = await findMatches(profile, filters);
     await saveCandidates(id, candidates);
     await updateJobStatus(id, 'completed');
-    return json({ id, status: 'completed', candidates });
+    res.status(200).json({ id, status: 'completed', candidates });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('Agent failed for job', id, err);
     await updateJobStatus(id, 'failed', msg);
-    return json({ id, status: 'failed', error: msg }, 500);
+    res.status(500).json({ id, status: 'failed', error: msg });
   }
-}
-
-function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'content-type': 'application/json' },
-  });
 }

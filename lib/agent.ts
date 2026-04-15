@@ -1,9 +1,17 @@
 import Exa from 'exa-js';
 import OpenAI from 'openai';
-import type { Candidate, MatchFilters, QuizProfile } from './db.js';
+import type { Candidate, MatchFilters, QuizProfile } from './db';
 
-const exa = new Exa(process.env.EXA_API_KEY!);
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+let exaClient: Exa | null = null;
+let openaiClient: OpenAI | null = null;
+function getExa(): Exa {
+  if (!exaClient) exaClient = new Exa(process.env.EXA_API_KEY!);
+  return exaClient;
+}
+function getOpenAI(): OpenAI {
+  if (!openaiClient) openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+  return openaiClient;
+}
 
 type RawResult = {
   title: string | null;
@@ -38,7 +46,7 @@ ${filters.city ?? 'Indonesia'} who would match this person romantically.
 Focus on finding people who express themselves publicly — writers, creators, professionals.
 Each query should describe a PERSON, not a job posting. Return JSON: {"queries": ["...", ...]}.`;
 
-  const res = await openai.chat.completions.create({
+  const res = await getOpenAI().chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],
     response_format: { type: 'json_object' },
@@ -53,7 +61,7 @@ async function searchAll(queries: string[]): Promise<RawResult[]> {
   await Promise.all(
     queries.map(async (q) => {
       try {
-        const r = await exa.searchAndContents(q, {
+        const r = await getExa().searchAndContents(q, {
           numResults: 6,
           type: 'neural',
           text: { maxCharacters: 2000 },
@@ -125,7 +133,7 @@ Skip results that are clearly not about a real person (companies, job posts, art
 someone else). For each kept candidate, explain matchReason and cautionReason honestly.
 Return the top 10 as JSON: {"candidates":[{"index":0,"name":"...","headline":"...","summary":"...","matchScore":85,"whyMatch":"...","whyCaution":"..."}]}`;
 
-  const res = await openai.chat.completions.create({
+  const res = await getOpenAI().chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],
     response_format: { type: 'json_object' },

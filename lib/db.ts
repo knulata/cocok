@@ -1,13 +1,17 @@
-import { neon } from '@neondatabase/serverless';
+import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
 
-const sql = neon(process.env.DATABASE_URL!);
+let sqlClient: NeonQueryFunction<false, false> | null = null;
+function sql(): NeonQueryFunction<false, false> {
+  if (!sqlClient) sqlClient = neon(process.env.DATABASE_URL!);
+  return sqlClient;
+}
 
 let schemaReady: Promise<void> | null = null;
 
 export async function ensureSchema(): Promise<void> {
   if (!schemaReady) {
     schemaReady = (async () => {
-      await sql`
+      await sql()`
         CREATE TABLE IF NOT EXISTS match_jobs (
           id TEXT PRIMARY KEY,
           status TEXT NOT NULL DEFAULT 'pending',
@@ -18,7 +22,7 @@ export async function ensureSchema(): Promise<void> {
           completed_at TIMESTAMPTZ
         )
       `;
-      await sql`
+      await sql()`
         CREATE TABLE IF NOT EXISTS candidates (
           id BIGSERIAL PRIMARY KEY,
           job_id TEXT NOT NULL REFERENCES match_jobs(id) ON DELETE CASCADE,
@@ -35,7 +39,7 @@ export async function ensureSchema(): Promise<void> {
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
       `;
-      await sql`CREATE INDEX IF NOT EXISTS candidates_job_id_idx ON candidates(job_id)`;
+      await sql()`CREATE INDEX IF NOT EXISTS candidates_job_id_idx ON candidates(job_id)`;
     })();
   }
   return schemaReady;
@@ -76,7 +80,7 @@ export async function createJob(
   quizProfile: QuizProfile,
   filters: MatchFilters,
 ): Promise<void> {
-  await sql`
+  await sql()`
     INSERT INTO match_jobs (id, status, quiz_profile, filters)
     VALUES (${id}, 'pending', ${JSON.stringify(quizProfile)}, ${JSON.stringify(filters)})
   `;
@@ -88,13 +92,13 @@ export async function updateJobStatus(
   error?: string,
 ): Promise<void> {
   if (status === 'completed' || status === 'failed') {
-    await sql`
+    await sql()`
       UPDATE match_jobs
       SET status = ${status}, error = ${error ?? null}, completed_at = NOW()
       WHERE id = ${id}
     `;
   } else {
-    await sql`
+    await sql()`
       UPDATE match_jobs SET status = ${status} WHERE id = ${id}
     `;
   }
@@ -102,7 +106,7 @@ export async function updateJobStatus(
 
 export async function saveCandidates(jobId: string, candidates: Candidate[]): Promise<void> {
   for (const c of candidates) {
-    await sql`
+    await sql()`
       INSERT INTO candidates (
         job_id, rank, name, headline, url, source, summary,
         match_score, why_match, why_caution
@@ -115,7 +119,7 @@ export async function saveCandidates(jobId: string, candidates: Candidate[]): Pr
 }
 
 export async function getJob(id: string) {
-  const rows = await sql`
+  const rows = await sql()`
     SELECT id, status, error, created_at, completed_at
     FROM match_jobs WHERE id = ${id}
   `;
@@ -123,7 +127,7 @@ export async function getJob(id: string) {
 }
 
 export async function getCandidates(jobId: string): Promise<Candidate[]> {
-  const rows = await sql`
+  const rows = await sql()`
     SELECT rank, name, headline, url, source, summary,
            match_score AS "matchScore", why_match AS "whyMatch", why_caution AS "whyCaution"
     FROM candidates WHERE job_id = ${jobId}
