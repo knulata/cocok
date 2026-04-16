@@ -21,6 +21,7 @@ type Body = {
   contactType?: string;
   quizProfile?: QuizProfile;
   consent?: boolean;
+  wantsWeeklyPings?: boolean;
 };
 
 export default async function handler(
@@ -125,6 +126,7 @@ export default async function handler(
     contactType,
     quizProfile: body.quizProfile ?? null,
     deleteToken,
+    wantsWeeklyPings: contactType === 'wa' && body.wantsWeeklyPings === true,
   };
 
   try {

@@ -66,6 +66,9 @@ export async function ensureSchema(): Promise<void> {
       await sql()`CREATE INDEX IF NOT EXISTS public_profiles_city_idx ON public_profiles(city)`;
       await sql()`CREATE INDEX IF NOT EXISTS public_profiles_love_type_idx ON public_profiles(love_type_key)`;
       await sql()`CREATE INDEX IF NOT EXISTS public_profiles_visible_idx ON public_profiles(is_visible)`;
+      await sql()`ALTER TABLE public_profiles ADD COLUMN IF NOT EXISTS wants_weekly_pings BOOLEAN NOT NULL DEFAULT FALSE`;
+      await sql()`ALTER TABLE public_profiles ADD COLUMN IF NOT EXISTS last_pinged_at TIMESTAMPTZ`;
+      await sql()`CREATE INDEX IF NOT EXISTS public_profiles_weekly_idx ON public_profiles(wants_weekly_pings, is_visible)`;
     })();
   }
   return schemaReady;
@@ -87,6 +90,8 @@ export type MatchFilters = {
   lookingFor?: string;
   interests?: string[];
   notes?: string;
+  seekerGender?: 'male' | 'female' | 'other';
+  lookingForGender?: 'male' | 'female' | 'any';
 };
 
 export type Candidate = {
@@ -195,6 +200,7 @@ export type PublicProfileInput = {
   contactType: string;
   quizProfile: QuizProfile | null;
   deleteToken: string;
+  wantsWeeklyPings: boolean;
 };
 
 export async function createPublicProfile(p: PublicProfileInput): Promise<void> {
@@ -202,26 +208,33 @@ export async function createPublicProfile(p: PublicProfileInput): Promise<void> 
     INSERT INTO public_profiles (
       id, love_type, love_type_key, name, age, city, gender,
       looking_for_gender, bio, contact, contact_type, quiz_profile,
-      consent_given_at, is_visible, delete_token
+      consent_given_at, is_visible, delete_token, wants_weekly_pings
     ) VALUES (
       ${p.id}, ${p.loveType}, ${p.loveTypeKey}, ${p.name}, ${p.age},
       ${p.city}, ${p.gender}, ${p.lookingForGender}, ${p.bio}, ${p.contact},
       ${p.contactType}, ${p.quizProfile ? JSON.stringify(p.quizProfile) : null},
-      NOW(), TRUE, ${p.deleteToken}
+      NOW(), TRUE, ${p.deleteToken}, ${p.wantsWeeklyPings}
     )
   `;
+}
+
+export async function markProfilesPinged(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  await sql()`UPDATE public_profiles SET last_pinged_at = NOW() WHERE id = ANY(${ids}::text[])`;
 }
 
 export async function listPublicProfiles(opts: {
   city?: string;
   ageMin?: number;
   ageMax?: number;
-  excludeGender?: string;
-  lookingForGender?: string;
+  wantGender?: 'male' | 'female' | 'any';
+  seekerGender?: 'male' | 'female' | 'other';
   limit?: number;
 }): Promise<PublicProfile[]> {
   const limit = opts.limit ?? 50;
   const cityLike = opts.city ? `%${opts.city.toLowerCase()}%` : null;
+  const wantGender = opts.wantGender && opts.wantGender !== 'any' ? opts.wantGender : null;
+  const seekerGender = opts.seekerGender ?? null;
   const rows = await sql()`
     SELECT id, love_type AS "loveType", love_type_key AS "loveTypeKey",
            name, age, city, gender, looking_for_gender AS "lookingForGender",
@@ -231,9 +244,44 @@ export async function listPublicProfiles(opts: {
       AND (${cityLike}::text IS NULL OR LOWER(city) LIKE ${cityLike}::text)
       AND (${opts.ageMin ?? null}::int IS NULL OR age IS NULL OR age >= ${opts.ageMin ?? null}::int)
       AND (${opts.ageMax ?? null}::int IS NULL OR age IS NULL OR age <= ${opts.ageMax ?? null}::int)
-      AND (${opts.excludeGender ?? null}::text IS NULL OR gender <> ${opts.excludeGender ?? null}::text)
+      AND (${wantGender}::text IS NULL OR gender = ${wantGender}::text)
+      AND (
+        ${seekerGender}::text IS NULL
+        OR looking_for_gender IS NULL
+        OR looking_for_gender = 'any'
+        OR looking_for_gender = ${seekerGender}::text
+      )
     ORDER BY created_at DESC
     LIMIT ${limit}
+  `;
+  return rows as PublicProfile[];
+}
+
+export async function deletePublicProfilesByContact(
+  contact: string,
+  contactType: string,
+): Promise<number> {
+  const rows = await sql()`
+    UPDATE public_profiles
+    SET is_visible = FALSE
+    WHERE contact = ${contact}
+      AND contact_type = ${contactType}
+      AND is_visible = TRUE
+    RETURNING id
+  `;
+  return rows.length;
+}
+
+export async function listWeeklyPingProfiles(): Promise<PublicProfile[]> {
+  const rows = await sql()`
+    SELECT id, love_type AS "loveType", love_type_key AS "loveTypeKey",
+           name, age, city, gender, looking_for_gender AS "lookingForGender",
+           bio, contact, contact_type AS "contactType"
+    FROM public_profiles
+    WHERE is_visible = TRUE
+      AND wants_weekly_pings = TRUE
+      AND contact_type = 'wa'
+    ORDER BY created_at DESC
   `;
   return rows as PublicProfile[];
 }

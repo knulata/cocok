@@ -60,6 +60,8 @@ async function fetchPoolCandidates(filters: MatchFilters): Promise<RawCandidate[
       city: filters.city,
       ageMin: filters.ageMin,
       ageMax: filters.ageMax,
+      wantGender: filters.lookingForGender,
+      seekerGender: filters.seekerGender,
       limit: 30,
     });
     return profiles.map((p) => ({

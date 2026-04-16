@@ -61,18 +61,90 @@ body { font-family: 'Inter', sans-serif; }
 <body class="bg-gray-950 text-white min-h-screen">
 
 <!-- LANDING -->
-<section id="landing" class="min-h-screen flex flex-col items-center justify-center px-4 hero-gradient relative">
+<section id="landing" class="min-h-[100vh] flex flex-col items-center px-4 hero-gradient relative pt-16 pb-20">
   <div class="absolute top-4 right-4">
     <button onclick="toggleLang()" class="text-sm bg-white/10 backdrop-blur px-3 py-1.5 rounded-full hover:bg-white/20 transition" id="langBtn">🇬🇧 EN</button>
   </div>
-  <div class="text-center max-w-md mx-auto slide-up -mt-16 sm:mt-0">
+
+  <div class="text-center max-w-md mx-auto slide-up mt-8 sm:mt-12 mb-10">
     <div class="text-6xl mb-4 floating">💜</div>
     <h1 class="text-4xl font-black mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent" id="heroTitle">Cari yang Beneran Cocok</h1>
-    <p class="text-gray-400 mb-8 text-lg" id="heroSub">Quiz 3 menit. Temukan pola cintamu dan siapa yang benar-benar cocok untukmu.</p>
+    <p class="text-gray-400 mb-6 text-lg" id="heroSub">Quiz 3 menit. Temukan pola cintamu dan siapa yang benar-benar cocok untukmu.</p>
     <button onclick="startQuiz()" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-lg px-8 py-4 rounded-2xl pulse-glow hover:scale-105 transition-transform" id="startBtn">
       Mulai Quiz →
     </button>
-    <p class="text-gray-500 text-sm mt-6" id="socialProof">🔥 50,000+ orang sudah coba</p>
+    <div class="flex items-center justify-center gap-2 mt-5">
+      <div class="flex -space-x-2">
+        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 border-2 border-gray-950 flex items-center justify-center text-[9px] font-bold">RN</div>
+        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 border-2 border-gray-950 flex items-center justify-center text-[9px] font-bold">DM</div>
+        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-fuchsia-400 to-pink-500 border-2 border-gray-950 flex items-center justify-center text-[9px] font-bold">SR</div>
+        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-2 border-gray-950 flex items-center justify-center text-[9px] font-bold">+</div>
+      </div>
+      <p class="text-gray-400 text-sm" id="socialProof">🔥 50,000+ orang sudah coba</p>
+    </div>
+  </div>
+
+  <!-- Testimonials -->
+  <div class="max-w-md mx-auto w-full mt-4">
+    <p class="text-center text-xs text-purple-300 uppercase tracking-widest mb-4" id="testimonialsLabel">✨ Cerita Cinta Nyata</p>
+    <div class="space-y-3">
+      <div class="bg-gray-900/60 backdrop-blur border border-purple-900/40 rounded-2xl p-4">
+        <div class="flex items-start gap-3 mb-2">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-sm font-black flex-shrink-0">RN</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <p class="font-bold text-sm">Rina, 26</p>
+              <span class="text-[10px] text-gray-500">• Jakarta</span>
+              <span class="text-[10px] bg-purple-900/60 text-purple-300 px-1.5 py-0.5 rounded-full">💜 Deep Connector</span>
+            </div>
+            <div class="text-yellow-400 text-xs mt-0.5">★★★★★</div>
+          </div>
+        </div>
+        <p class="text-sm text-gray-300 leading-relaxed italic">"Quiz-nya beneran ngerti gue. Akhirnya gue paham kenapa hubungan sebelumnya selalu berakhir di tempat yang sama. Worth banget!"</p>
+      </div>
+
+      <div class="bg-gray-900/60 backdrop-blur border border-purple-900/40 rounded-2xl p-4">
+        <div class="flex items-start gap-3 mb-2">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-purple-400 to-indigo-600 flex items-center justify-center text-sm font-black flex-shrink-0">DM</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <p class="font-bold text-sm">Dimas, 29</p>
+              <span class="text-[10px] text-gray-500">• Bandung</span>
+              <span class="text-[10px] bg-purple-900/60 text-purple-300 px-1.5 py-0.5 rounded-full">💎 Growth Partner</span>
+            </div>
+            <div class="text-yellow-400 text-xs mt-0.5">★★★★★</div>
+          </div>
+        </div>
+        <p class="text-sm text-gray-300 leading-relaxed italic">"Gue ketemu pasangan lewat pool Cocok. Udah 4 bulan jalan — pertama kali nemu yang beneran nyambung pola cintanya sama gue. Gila sih."</p>
+      </div>
+
+      <div class="bg-gray-900/60 backdrop-blur border border-purple-900/40 rounded-2xl p-4">
+        <div class="flex items-start gap-3 mb-2">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-fuchsia-400 to-pink-600 flex items-center justify-center text-sm font-black flex-shrink-0">SR</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <p class="font-bold text-sm">Sarah, 27</p>
+              <span class="text-[10px] text-gray-500">• Surabaya</span>
+              <span class="text-[10px] bg-purple-900/60 text-purple-300 px-1.5 py-0.5 rounded-full">🎭 Romantic Dreamer</span>
+            </div>
+            <div class="text-yellow-400 text-xs mt-0.5">★★★★★</div>
+          </div>
+        </div>
+        <p class="text-sm text-gray-300 leading-relaxed italic">"Laporannya bikin gue lebih self-aware. Sekarang gue lebih paham red flag sama green flag di hubungan. Recommended!"</p>
+      </div>
+    </div>
+
+    <!-- Trust strip -->
+    <div class="mt-6 pt-6 border-t border-gray-800/60">
+      <p class="text-center text-[10px] text-gray-600 uppercase tracking-widest mb-3">Pembayaran Aman</p>
+      <div class="flex items-center justify-center gap-3 flex-wrap">
+        <span class="text-xs bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 font-semibold">QRIS</span>
+        <span class="text-xs bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 font-semibold">GoPay</span>
+        <span class="text-xs bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 font-semibold">OVO</span>
+        <span class="text-xs bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 font-semibold">DANA</span>
+        <span class="text-xs bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 font-semibold">BCA</span>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -215,7 +287,11 @@ body { font-family: 'Inter', sans-serif; }
           </div>
           <label class="flex items-start gap-2 text-xs text-gray-400 cursor-pointer">
             <input type="checkbox" id="ppConsent" class="mt-0.5 accent-purple-500" />
-            <span>Saya setuju profil saya dipublikasikan di pool Cocok dan bisa ditemukan oleh pengguna berbayar yang cocok. Saya bisa menghapus profil saya kapan saja.</span>
+            <span>Saya setuju profil saya dipublikasikan di pool Cocok dan bisa ditemukan oleh pengguna berbayar yang cocok. Saya bisa menghapus profil saya kapan saja (balas "HAPUS" ke pesan Cocok).</span>
+          </label>
+          <label class="flex items-start gap-2 text-xs text-gray-400 cursor-pointer">
+            <input type="checkbox" id="ppWeeklyPings" class="mt-0.5 accent-pink-500" />
+            <span>🌙 Kirim saya horoscope cinta mingguan via WhatsApp — gratis, tiap Senin pagi.</span>
           </label>
           <button onclick="publishProfile()" id="publishBtn" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 font-bold py-3 rounded-xl hover:opacity-90 transition text-black">✨ Publikasikan (Gratis)</button>
           <p id="publishHint" class="text-center text-xs text-gray-500"></p>
@@ -300,6 +376,25 @@ body { font-family: 'Inter', sans-serif; }
         <div>
           <label class="block text-xs text-gray-400 mb-1">Nomor WhatsApp-mu (hasil dikirim via WA)</label>
           <input type="text" id="mfWhatsapp" placeholder="0812xxxxxxx atau 62812xxxxxxx" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Saya adalah</label>
+            <select id="mfSeekerGender" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+              <option value="">Pilih...</option>
+              <option value="female">Perempuan</option>
+              <option value="male">Laki-laki</option>
+              <option value="other">Lainnya</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Mencari</label>
+            <select id="mfLookingForGender" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+              <option value="any">Siapa saja</option>
+              <option value="female">Perempuan</option>
+              <option value="male">Laki-laki</option>
+            </select>
+          </div>
         </div>
         <div>
           <label class="block text-xs text-gray-400 mb-1">Kota / Lokasi</label>
@@ -653,6 +748,7 @@ async function publishProfile() {
   const contact = document.getElementById('ppContact').value.trim();
   const contactType = document.getElementById('ppContactType').value;
   const consent = document.getElementById('ppConsent').checked;
+  const wantsWeeklyPings = document.getElementById('ppWeeklyPings').checked;
 
   function setError(msg) {
     hint.textContent = msg;
@@ -692,6 +788,7 @@ async function publishProfile() {
         name, age, city, gender, lookingForGender,
         bio, contact, contactType,
         quizProfile, consent: true,
+        wantsWeeklyPings,
       }),
     });
     const data = await res.json();
@@ -730,12 +827,19 @@ async function findRealMatches() {
   if (matchFinderState === 'running') return;
 
   const searcherWhatsapp = document.getElementById('mfWhatsapp').value.trim();
+  const seekerGender = document.getElementById('mfSeekerGender').value;
+  const lookingForGender = document.getElementById('mfLookingForGender').value;
   const city = document.getElementById('mfCity').value.trim();
   const ageMin = parseInt(document.getElementById('mfAgeMin').value, 10);
   const ageMax = parseInt(document.getElementById('mfAgeMax').value, 10);
   const lookingFor = document.getElementById('mfLookingFor').value;
   const notes = document.getElementById('mfNotes').value.trim();
 
+  if (!seekerGender) {
+    hint.textContent = 'Pilih gender kamu dulu.';
+    hint.className = 'text-center text-xs text-red-400 mt-2';
+    return;
+  }
   if (!city) {
     hint.textContent = 'Mohon isi kota terlebih dahulu.';
     hint.className = 'text-center text-xs text-red-400 mt-2';
@@ -766,6 +870,8 @@ async function findRealMatches() {
     ageMax: Number.isFinite(ageMax) ? ageMax : undefined,
     lookingFor,
     notes: notes || undefined,
+    seekerGender,
+    lookingForGender,
   };
 
   try {
